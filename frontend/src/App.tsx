@@ -1,7 +1,8 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Layout from './components/Layout'
-import { AuthProvider, useAuth } from './lib/auth'
+import { AuthProvider, hint, useAuth } from './lib/auth'
 import AuthPage from './pages/AuthPage'
+import Landing from './pages/Landing'
 import Activity from './pages/Activity'
 import Analytics from './pages/Analytics'
 import Approvals from './pages/Approvals'
@@ -29,8 +30,11 @@ import TicketDetail from './pages/TicketDetail'
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { me, loading, offline, retry } = useAuth()
+  const home = useLocation().pathname === '/'
+  // first-time visitors see the landing page at once, even while a sleeping server wakes up
+  if (loading && home && !hint()) return <Landing />
   if (loading) return <div className="flex min-h-screen items-center justify-center text-sm text-slate-500">Loading...</div>
-  if (offline) {
+  if (offline && !(home && !hint())) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6 text-center">
         <div className="max-w-sm">
@@ -41,7 +45,7 @@ function Protected({ children }: { children: React.ReactNode }) {
       </div>
     )
   }
-  if (!me) return <Navigate to="/login" replace />
+  if (!me) return home ? <Landing /> : <Navigate to="/login" replace />
   return <>{children}</>
 }
 

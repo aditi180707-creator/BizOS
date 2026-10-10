@@ -11,6 +11,17 @@ type AuthState = {
   logout: () => void
 }
 
+// Remembers that this browser was signed in, so the home page can show a spinner (not the landing page) while the session loads.
+export function hint(on?: boolean): boolean {
+  try {
+    if (on === true) localStorage.setItem('bizos.hint', '1')
+    else if (on === false) localStorage.removeItem('bizos.hint')
+    return localStorage.getItem('bizos.hint') === '1'
+  } catch {
+    return false
+  }
+}
+
 const Ctx = createContext<AuthState | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -27,9 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOffline(false)
     try {
       setMe(await api<Me>('/auth/me'))
+      hint(true)
     } catch (e) {
       if (e instanceof ApiError && e.status === 0) setOffline(true) // keep the session, the network is the problem
-      else setMe(null)
+      else {
+        setMe(null)
+        hint(false)
+      }
     } finally {
       setLoading(false)
     }
@@ -40,7 +55,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadMe])
 
   useEffect(() => {
-    const onExpired = () => setMe(null)
+    const onExpired = () => {
+      setMe(null)
+      hint(false)
+    }
     window.addEventListener('bizos:unauthorized', onExpired)
     return () => window.removeEventListener('bizos:unauthorized', onExpired)
   }, [])
@@ -57,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setMe(null)
+    hint(false)
     void api('/auth/logout', { method: 'POST' }).catch(() => undefined)
   }
 

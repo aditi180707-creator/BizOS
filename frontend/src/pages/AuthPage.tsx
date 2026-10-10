@@ -37,8 +37,8 @@ export default function AuthPage({ mode }: { mode: 'login' | 'register' }) {
       <div className="hidden flex-col justify-between bg-slate-900 p-12 text-white lg:flex">
         <p className="font-display text-xl font-bold">bizos</p>
         <div>
-          <p className="max-w-md font-display text-4xl font-bold leading-tight">Customers write at 11 pm. Your AI answers. You see it in the morning.</p>
-          <p className="mt-5 max-w-md text-slate-300">Sales questions, quotes, order status, returns. In English, Hindi or Hinglish. You step in only when a person is needed.</p>
+          <p className="max-w-md font-display text-4xl font-bold leading-tight">{mode === 'login' ? 'See what your customers asked while you were away.' : 'Your shop\'s AI assistant, ready in five minutes.'}</p>
+          <p className="mt-5 max-w-md text-slate-300">{mode === 'login' ? 'Your queue is sorted by what needs you first.' : 'Add your products and a few answers, then share one chat link. No card needed.'}</p>
         </div>
         <p className="text-sm text-slate-400">Built for shops and small businesses.</p>
       </div>
